@@ -1,0 +1,11 @@
+Package: RSQLServer
+Version: 0.0-2
+Title: R SQL Server Interface
+Author: Bryan W. Lewis <bryan@bigcomputing.com>
+Maintainer: Bryan W. Lewis <bryan@bigcomputing.com>
+Depends: R (>= 1.5.0)
+Description: The first draft of a native R SQL Server interface package
+             for Windows systems (Windows only). This package does not
+             yet follow DBI, but will eventually.
+License: GPL version 2
+URL: http://www.rforge.net/RSQLServer.html
