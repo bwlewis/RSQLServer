@@ -1,5 +1,5 @@
 Package: RSQLServer
-Version: 0.0-2
+Version: 0.0-3
 Title: R SQL Server Interface
 Author: Bryan W. Lewis <bryan@bigcomputing.com>
 Maintainer: Bryan W. Lewis <bryan@bigcomputing.com>

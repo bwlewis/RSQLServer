@@ -93,6 +93,7 @@ printf("ncol error\n");
     if(!ok) return;
     for(j=0; j < reader->FieldCount; ++j) {
       Type^ t = reader->GetFieldType(j);
+//printf("type %d = %s\n", j, (char*) (void *)Marshal::StringToHGlobalAnsi(t->ToString()));
       if(t == double::typeid || t == Decimal::typeid) {
         // Double
         types[j] = sDOUBLE;
@@ -125,18 +126,32 @@ printf("ncol error\n");
 // freed with the 'Free' method below.
   int fetchRows(int n, int *types, void **data)
   {
+// R NA (missing value) encoding:
+    const unsigned long nal[2]={ 0x000007a2, 0x7ff80000 };
+    const double doubleNA = *((double *) nal);
+    const int intNA = -2147483648;
     int k, j = 0;
     if(!ok) return 0;
     if(!reader) return 0;
     if(!reader->HasRows) return 0;
     while(reader->Read() && (j < n)) {
       for(k=0;k < ncol(); ++k){
-        if(types[k] == sINT) ((int*)data[k])[j] = (int)reader->GetInt32(k);
-	else if(types[k] == sDOUBLE) ((double *)data[k])[j] =
-		reader->GetDouble(k);
-	else if(types[k] == sCHAR) ((char **)data[k])[j] = 
-		(char *) Marshal::StringToHGlobalAnsi(
-				reader->GetString(k)).ToPointer();
+        if(types[k] == sINT)
+          if(!reader->IsDBNull(k)) 
+		((int*)data[k])[j] = (int)reader->GetInt32(k);
+	  else
+		((int*)data[k])[j] = intNA;
+        else if(types[k] == sDOUBLE)
+          if(!reader->IsDBNull(k)) 
+		((double *)data[k])[j] = reader->GetDouble(k);
+	  else
+		((double *)data[k])[j] = doubleNA;
+        else if(types[k] == sCHAR)
+          if(!reader->IsDBNull(k)) 
+	        ((char **)data[k])[j] = (char *) Marshal::StringToHGlobalAnsi(reader->GetString(k)).ToPointer();
+	  else {
+		((char **)data[k])[j] = (char *)0;
+	  }
       }
       j++;
     }
@@ -221,3 +236,48 @@ extern "C" __declspec( dllexport ) int cur(void *q)
   if(q) return ((RSqlClient *)q)->getCursor();
   else return 0;
 }
+
+/*
+int main()
+{
+//  void *q = (void *) dbconnect("Server=10.7.54.57;UID=statsrv1;PWD=statstat;");
+  void *q = (void *) dbconnect("Server=YKRDQS1;database=RevoR;user=SplusUser;password=B@d$tat2");
+//  dbquery(q,"SELECT * FROM interimTTESIM");
+  dbquery(q, "SELECT TOP 4 * FROM ManageSurvival1Group");
+  int j, k, h;
+  int nc = ncol(q);
+  int *types = (int *)malloc(nc * sizeof(int));
+  char **names = (char **)malloc(nc * sizeof(char *));
+  getTypes(q, types);
+  getColumnNames(q, names);
+  printf("nc=%d\n",nc);
+  for(j=0;j<nc;++j) {
+    printf("Column %d type = %d, name = %s\n",j,types[j],names[j]);
+  }
+
+  k = 4;
+  void ** data = (void **)malloc(nc * sizeof(char *));
+  for(j=0;j<nc;++j){
+    if(types[j] == sINT)    data[j] = (void *)malloc(k * sizeof(int));
+    if(types[j] == sDOUBLE) data[j] = (void *)malloc(k * sizeof(double));
+    if(types[j] == sCHAR)  data[j] = (void *)malloc(k * sizeof(char *));
+  }
+  j = fetch(q, k, types, data);  // j holds the number of rows returned
+  printf("fetched %d rows\n",j);
+  for(k=0;k<j;k++) {
+    printf("Row %d  ",k);
+    for(h=0;h<nc;h++) {
+      if(types[h] == sINT) printf("%d ", ((int *)data[h])[k]);
+      if(types[h] == sDOUBLE) printf("%f ", ((double *)data[h])[k]);
+      if(types[h] == sCHAR) {
+        if( ((char **)data[h])[k] ) printf("%s ", ((char **)data[h])[k]);
+	else printf("NULL ");
+      }
+    }
+    printf("\n");
+  }
+
+  dbclose(q);
+  return 0;
+}
+*/

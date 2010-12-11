@@ -141,8 +141,13 @@ SEXP Rfetch(SEXP P, SEXP N)
       SET_VECTOR_ELT(ret, j, allocVector(STRSXP, m));
       column = VECTOR_ELT(ret, j);
       for(k=0;k<m;++k) {
-        SET_STRING_ELT(column, k, mkChar(((char **)data[j])[k]));
-        freeHGlobal(q, ((void **)data[j])[k]);
+	if(((char **)data[j])[k]) {
+          SET_STRING_ELT(column, k, mkChar(((char **)data[j])[k]));
+          freeHGlobal(q, ((void **)data[j])[k]);
+	}
+	else {
+          SET_STRING_ELT(column, k, mkChar(""));
+	}
       }
     }
     free(data[j]);

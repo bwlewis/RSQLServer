@@ -5,5 +5,5 @@
 
 `.onUnload` <- function(libpath)
 {
-  library.dynam.unload("RSF", libpath)
+  library.dynam.unload("RSQLServer", libpath)
 }
