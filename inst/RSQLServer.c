@@ -8,9 +8,15 @@
 #include <sys/types.h>
 
 // XXX Move out to header
-#define sINT 1
-#define sDOUBLE 2
-#define sCHAR 3
+// SQL and R types
+#define sINT32   1        // mapped to INTEGER
+#define sDOUBLE  2        // mapped to REAL
+#define sCHAR    3        // mapped to CHAR
+#define sINT16   4        // mapped to INTEGER
+#define sDECIMAL 5        // mapped to REAL
+#define sDATE    6        // mapped to CHAR
+#define sUNSUPPORTED 0    // not mapped
+
 void *dbconnect(const char *);
 void *dbclose(void *);
 void dbquery(void *, const char *);
@@ -109,9 +115,11 @@ SEXP Rfetch(SEXP P, SEXP N)
 // is string handling. :(
   data = (void **)malloc(nc * sizeof(char *));
   for(j=0;j<nc;++j){
-    if(types[j] == sINT)    data[j] = (void *)malloc(n * sizeof(int));
-    if(types[j] == sDOUBLE) data[j] = (void *)malloc(n * sizeof(double));
-    if(types[j] == sCHAR)   data[j] = (void *)malloc(n * sizeof(char *));
+    if(types[j] == sINT16 || types[j] == sINT32)
+	    data[j] = (void *)malloc(n * sizeof(int));
+    else if(types[j] == sDOUBLE || types[j] == sDECIMAL) 
+	    data[j] = (void *)malloc(n * sizeof(double));
+    else data[j] = (void *)malloc(n * sizeof(char *));
   }
   m = fetch(q, n, types, data);  // m holds the number of rows returned
 
@@ -123,21 +131,21 @@ SEXP Rfetch(SEXP P, SEXP N)
       SET_STRING_ELT(cnames, j, mkChar(names[j]));
       freeHGlobal(q, (void *)names[j]);
     }
-    if(types[j] == sINT) {
+    if(types[j] == sINT16 || types[j] == sINT32) {
       SET_VECTOR_ELT(ret, j, allocVector(INTSXP, m));
       column = VECTOR_ELT(ret, j);
       intp = INTEGER(column);
       for(k=0;k<m;++k)
         intp[k] = ((int *)data[j])[k];
     }
-    else if(types[j] == sDOUBLE) {
+    else if(types[j] == sDOUBLE || types[j] == sDECIMAL) {
       SET_VECTOR_ELT(ret, j, allocVector(REALSXP, m));
       column = VECTOR_ELT(ret, j);
       nump = REAL(column);
       for(k=0;k<m;++k)
         nump[k] = ((double *)data[j])[k];
     }
-    else if(types[j] == sCHAR) {
+    else {
       SET_VECTOR_ELT(ret, j, allocVector(STRSXP, m));
       column = VECTOR_ELT(ret, j);
       for(k=0;k<m;++k) {
