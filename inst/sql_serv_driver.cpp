@@ -148,7 +148,7 @@ printf("ncol error\n");
     if(!ok) return 0;
     if(!reader) return 0;
     if(!reader->HasRows) return 0;
-    while(reader->Read() && (j < n)) {
+    while(reader->Read()) {
       for(k=0;k < ncol(); ++k){
         if(types[k] == sINT32)
           if(!reader->IsDBNull(k)) 
@@ -187,6 +187,7 @@ printf("ncol error\n");
 	  }
       }
       j++;
+      if(j>=n) break;
     }
     cursor += j;
     return j;

@@ -40,7 +40,7 @@
   .Call("Rfetch", con, as.integer(n))
 }
 
-`RSQLServer_fetchTable` <- function(con, n=100000)
+`RSQLServer_fetchTable` <- function(con, n=2000000)
 {
   if(is.null(con)) return(NULL)
   x <- .Call("Rfetch", con, as.integer(n))
