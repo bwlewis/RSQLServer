@@ -1,8 +1,8 @@
-This is a prototype native SQL Server interface for R on Windows. It requires
-a CLR c++ compiler (for example, MSVC++) **and** the R mingw toolchain to
+This is a prototype native SQL Server interface for R on Windows. It requires a
+CLR c++ compiler (for example, MSVC++) **and** the R mingw toolchain to
 compile.
 
 Examine the compilation scripts in the inst directory for more info.
 
-This is an early version, which will eventually conform to the R DBI
-convention.
+This is an early and experimental version, which will eventually conform to the
+R DBI convention.
