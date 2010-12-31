@@ -97,7 +97,6 @@ SEXP Rfetch(SEXP P, SEXP N)
   void **data;
   int *intp;
   double *nump;
-  char buf[1024];
   int m,j,k,p = 0;
   int n = INTEGER(N)[0];
   void *q = R_ExternalPtrAddr(P);
@@ -163,11 +162,6 @@ SEXP Rfetch(SEXP P, SEXP N)
   free(data);
   free(names);
   k = cur(q) - m;
-  for(j=0;j<m;++j) {
-    memset((void *)buf, 0, 1024);
-    snprintf(buf, 1024, "Row%d", j+k);
-    SET_STRING_ELT(rnames, j, mkChar(buf));
-  }
   SET_STRING_ELT (dataFrameString, 0, mkChar ("data.frame"));
   setAttrib (ret, R_ClassSymbol, dataFrameString);
   setAttrib (ret, R_NamesSymbol, cnames);
